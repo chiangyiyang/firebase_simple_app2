@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase 圖片上傳教學範例</title>
+    <!-- 引入 Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- 引入 JSZip (用於打包 ZIP) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- 引入 FileSaver (輔助下載) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Firebase 圖片雲端存儲 <span class="badge">教學版</span></h1>
+            <p class="subtitle">Vanilla HTML + Firebase + JSZip 實作範例</p>
+        </header>
+
+        <!-- 驗證區域 -->
+        <section id="auth-section" class="card">
+            <div id="user-info" class="hidden">
+                <img id="user-photo" src="" alt="使用者頭像">
+                <div>
+                    <span id="user-name">載入中...</span>
+                    <button id="logout-btn" class="btn btn-secondary">登出</button>
+                </div>
+            </div>
+            <div id="login-prompt">
+                <p>請先登入以開始使用上傳功能</p>
+                <button id="login-btn" class="btn btn-primary">使用 Google 帳號登入</button>
+            </div>
+        </section>
+
+        <!-- 功能區域 (預設隱藏) -->
+        <main id="main-content" class="hidden">
+            <!-- 上傳表單 -->
+            <section id="upload-section" class="card">
+                <h2>上傳新資料</h2>
+                <form id="upload-form">
+                    <div class="form-group">
+                        <label for="image-input">選擇圖片</label>
+                        <input type="file" id="image-input" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="desc-input">圖片描述</label>
+                        <textarea id="desc-input" placeholder="請輸入圖片的詳細描述..." required></textarea>
+                    </div>
+                    <button type="submit" id="upload-btn" class="btn btn-success">開始上傳</button>
+                </form>
+                <!-- 進度條 -->
+                <div id="progress-container" class="hidden">
+                    <div id="progress-bar"></div>
+                    <span id="progress-text">0%</span>
+                </div>
+            </section>
+
+            <!-- 資料管理 -->
+            <section id="data-section" class="card">
+                <div class="section-header">
+                    <h2>已上傳資料庫</h2>
+                    <button id="download-all-btn" class="btn btn-info">打包下載所有 ZIP</button>
+                </div>
+                <div id="data-list" class="grid-container">
+                    <!-- 資料將由 JS 動態生成 -->
+                    <p class="empty-msg">暫無資料</p>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Firebase 教學範例 - 繁體中文版</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK (模組化版本) -->
+    <script type="importmap">
+        {
+          "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js",
+            "firebase/storage": "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js"
+          }
+        }
+    </script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
