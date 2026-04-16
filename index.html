@@ -34,6 +34,32 @@
             </div>
         </section>
 
+        <!-- 成員列表區域 (僅在登入後顯示) -->
+        <section id="users-section" class="card hidden">
+            <h2>近期成員</h2>
+            <div id="users-list" class="users-grid">
+                <!-- 由 JS 動態生成 -->
+                <p class="empty-msg">載入成員中...</p>
+            </div>
+        </section>
+
+        <!-- 管理員儀表板 (僅管理員可見) -->
+        <section id="admin-section" class="card hidden">
+            <h2>管理員控制面板 - 白名單管理</h2>
+            <div class="admin-controls">
+                <form id="whitelist-form">
+                    <div class="form-group flex-group">
+                        <input type="email" id="whitelist-input" placeholder="輸入好友的 Email (例如: friend@gmail.com)" required>
+                        <button type="submit" class="btn btn-primary">新增授權</button>
+                    </div>
+                </form>
+            </div>
+            <div id="whitelist-tags" class="tag-container">
+                <!-- 授權名單標籤將顯示於此 -->
+                <p class="empty-msg">讀取授權名單中...</p>
+            </div>
+        </section>
+
         <!-- 功能區域 (預設隱藏) -->
         <main id="main-content" class="hidden">
             <!-- 上傳表單 -->

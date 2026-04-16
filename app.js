@@ -15,8 +15,10 @@ import {
     orderBy,
     serverTimestamp,
     getDocs,
+    getDoc,
     deleteDoc,
-    doc
+    doc,
+    setDoc
 } from "firebase/firestore";
 import {
     ref,
@@ -37,6 +39,12 @@ const downloadAllBtn = document.getElementById('download-all-btn');
 const progressBar = document.getElementById('progress-bar');
 const progressText = document.getElementById('progress-text');
 const progressContainer = document.getElementById('progress-container');
+const usersSection = document.getElementById('users-section');
+const usersList = document.getElementById('users-list');
+const adminSection = document.getElementById('admin-section');
+const whitelistForm = document.getElementById('whitelist-form');
+const whitelistInput = document.getElementById('whitelist-input');
+const whitelistTags = document.getElementById('whitelist-tags');
 
 let currentUser = null;
 
@@ -47,6 +55,7 @@ onAuthStateChanged(auth, (user) => {
         currentUser = user;
         showLoggedInUI(user);
         listenToData();
+        listenToUsers();
     } else {
         // 使用者已登出
         currentUser = null;
@@ -60,24 +69,163 @@ function showLoggedInUI(user) {
     authSection.classList.remove('hidden');
     loginPrompt.classList.add('hidden');
     mainContent.classList.remove('hidden');
+    usersSection.classList.remove('hidden');
+
+    // 管理員檢查
+    if (user.email === 'chiangyiyang@gmail.com') {
+        adminSection.classList.remove('hidden');
+        listenToWhitelist();
+    }
 }
 
 function showLoggedOutUI() {
     authSection.classList.add('hidden');
     loginPrompt.classList.remove('hidden');
     mainContent.classList.add('hidden');
+    usersSection.classList.add('hidden');
+    adminSection.classList.add('hidden');
 }
 
 // --- 登入與登出事件 ---
 loginBtn.addEventListener('click', async () => {
     const provider = new GoogleAuthProvider();
     try {
-        await signInWithPopup(auth, provider);
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+
+        // 檢查白名單
+        const isAllowed = await checkWhitelist(user.email);
+        if (!isAllowed) {
+            alert(`抱歉，您的 Email (${user.email}) 未在授權名單中。`);
+            await signOut(auth);
+            return;
+        }
+
+        // 儲存/更新使用者資訊
+        await saveUserProfile(user);
+        
+        // 成功後啟動監聽成員
+        listenToUsers();
+
     } catch (error) {
         console.error("登入失敗:", error);
         alert("登入失敗，請檢查控制台錯誤訊息。");
     }
 });
+
+// --- 白名單與成員管理邏輯 ---
+
+async function checkWhitelist(email) {
+    // 預設授權 chiangyiyang@gmail.com
+    if (email === 'chiangyiyang@gmail.com') return true;
+
+    try {
+        const whitelistDoc = await getDoc(doc(db, "whitelist", email));
+        return whitelistDoc.exists();
+    } catch (err) {
+        console.error("檢查白名單失敗:", err);
+        return false;
+    }
+}
+
+async function saveUserProfile(user) {
+    try {
+        await setDoc(doc(db, "users", user.uid), {
+            displayName: user.displayName,
+            photoURL: user.photoURL,
+            email: user.email,
+            lastLogin: serverTimestamp()
+        }, { merge: true });
+    } catch (err) {
+        console.error("更新使用者資訊失敗:", err);
+    }
+}
+
+function listenToUsers() {
+    const q = query(collection(db, "users"), orderBy("lastLogin", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        usersList.innerHTML = '';
+        if (snapshot.empty) {
+            usersList.innerHTML = '<p class="empty-msg">尚無成員資料</p>';
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const userData = doc.data();
+            const userCard = document.createElement('div');
+            userCard.className = 'user-card';
+            userCard.innerHTML = `
+                <img src="${userData.photoURL}" class="user-avatar" alt="${userData.displayName}">
+                <span class="user-name-small">${userData.displayName}</span>
+            `;
+            usersList.appendChild(userCard);
+        });
+    });
+}
+
+// --- 管理員專屬功能實作 ---
+
+function listenToWhitelist() {
+    // 監聽 whitelist 集合
+    onSnapshot(collection(db, "whitelist"), (snapshot) => {
+        whitelistTags.innerHTML = '';
+        if (snapshot.empty) {
+            whitelistTags.innerHTML = '<p class="empty-msg">目前無其他授權名單</p>';
+            return;
+        }
+
+        snapshot.forEach((doc) => {
+            const email = doc.id;
+            const tag = document.createElement('div');
+            tag.className = 'whitelist-tag';
+            tag.innerHTML = `
+                <span>${email}</span>
+                <button class="btn-remove-tag" onclick="removeFromWhitelist('${email}')">&times;</button>
+            `;
+            whitelistTags.appendChild(tag);
+        });
+    });
+}
+
+// 新增白名單
+whitelistForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = whitelistInput.value.trim().toLowerCase();
+    
+    if (!email) return;
+
+    try {
+        // 以 Email 作為文件 ID 存入 whitelist 集合
+        await setDoc(doc(db, "whitelist", email), {
+            addedAt: serverTimestamp(),
+            addedBy: currentUser.email
+        });
+        whitelistInput.value = '';
+        alert(`已成功將 ${email} 加入白名單。`);
+    } catch (err) {
+        console.error("新增白名單失敗:", err);
+        alert("新增失敗，請檢查權限。");
+    }
+});
+
+// 刪除白名單
+window.removeFromWhitelist = async (email) => {
+    if (email === 'chiangyiyang@gmail.com') {
+        alert("無法刪除主要管理員帳號！");
+        return;
+    }
+
+    if (!confirm(`確定要取消 ${email} 的授權嗎？`)) return;
+
+    try {
+        await deleteDoc(doc(db, "whitelist", email));
+        alert("授權已移除。");
+    } catch (err) {
+        console.error("刪除失敗:", err);
+        alert("移除失敗。");
+    }
+};
 
 logoutBtn.addEventListener('click', () => {
     signOut(auth);

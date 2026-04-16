@@ -237,6 +237,96 @@ textarea {
     padding: 2rem;
 }
 
+/* 成員列表樣式 */
+.users-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.user-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease;
+}
+
+.user-card:hover {
+    transform: scale(1.05);
+}
+
+.user-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-bottom: 0.8rem;
+    border: 3px solid #f1f5f9;
+}
+
+.user-name-small {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+}
+
+/* 管理員介面樣式 */
+.flex-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.flex-group input {
+    flex: 1;
+}
+
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 1.5rem;
+}
+
+.whitelist-tag {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-remove-tag {
+    background: #fee2e2;
+    color: #ef4444;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.btn-remove-tag:hover {
+    background: #fecaca;
+}
+
 footer {
     text-align: center;
     margin-top: 3rem;
